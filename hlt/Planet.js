@@ -30,7 +30,7 @@ class Planet extends Entity {
 
     /**
      * Determines if the planet owner is not you.
-     * @returns {boolean} true if planet is owned by you
+     * @returns {boolean} true if planet is owned by enemy
      */
     isOwnedByEnemy() {
         return this.isOwned() && this.ownerId !== this._gameMap.myPlayerId;
@@ -98,7 +98,7 @@ class Planet extends Entity {
     }
 
     toString() {
-        return 'planer. ' + (this.ownerId ? 'owner id: ' + this.ownerId : 'no owner') + ': ' + JSON.stringify(this._params);
+        return 'planet. ' + (this.ownerId ? 'owner id: ' + this.ownerId : 'no owner') + ': ' + JSON.stringify(this._params);
     }
 }
 

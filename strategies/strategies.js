@@ -7,20 +7,36 @@ const Geometry = require('../hlt/Geometry');
  * @returns {string[]} moves that needs to be taken. null values are ignored
  */
 // baubot 4 target strat.
+// Change target preferences depending on how many planets we have.
 function fourStrat(gameMap) {
-    // Here we build the set of commands to be sent to the Halite engine at the end of the turn
-    // one ship - one command
-    // in this particular strategy we only give new commands to ships that are not docked
+    // Get all planets
+    var planets = gameMap.planets;
+    // Set distance Buffer variables
+    dockedEnemyBuffer = 5;
+    enemyBuffer = 15;
+    dockBuffer = 15;
+    freeBuffer = 15;
+    // Ship Commands
     const moves = gameMap.myShips.filter(s => s.isUndocked()).map(
     ship => {
+        // Get my planets.
+        var myPlanets = planets.filter(p => p.isOwnedByMe());
+        if(myPlanets < 3) {
+            enemyBuffer = 15;
+            dockBuffer = 15;
+            freeBuffer = 35;
+        } else {
+            enemyBuffer = 15;
+            dockBuffer = 15;
+            freeBuffer = 15;
+        }
+
         // Look for a close free planet.
-        var freePlanets = gameMap.planets.filter(p => p.isFree());
-        freePlanets = [...freePlanets].sort((a, b) => Geometry.distance(ship, a) - Geometry.distance(ship, b));
+        var freePlanets = planets.filter(p => p.isFree()).sort((a, b) => Geometry.distance(ship, a) - Geometry.distance(ship, b));
         var freePlanet = freePlanets[0];
 
         // Look for dockable planets.
-        var dockPlanets = gameMap.planets.filter(p => (p.isOwnedByMe() && p.hasDockingSpot()));
-        dockPlanets = [...dockPlanets].sort((a, b) => Geometry.distance(ship, a) - Geometry.distance(ship, b));
+        var dockPlanets = planets.filter(p => (p.isOwnedByMe() && p.hasDockingSpot())).sort((a, b) => Geometry.distance(ship, a) - Geometry.distance(ship, b));
         var dockPlanet = dockPlanets[0];
 
         // Look for enemy ship.
@@ -35,8 +51,8 @@ function fourStrat(gameMap) {
 
         if(freePlanets.length > 0 && dockPlanets.length > 0) {
             if (
-                ship.distanceBetween(freePlanet) <= ship.distanceBetween(dockPlanet) + 15 &&
-                ship.distanceBetween(freePlanet) < ship.distanceBetween(enemy) + 15
+                ship.distanceBetween(freePlanet) <= ship.distanceBetween(dockPlanet) + dockBuffer &&
+                ship.distanceBetween(freePlanet) < ship.distanceBetween(enemy) + enemyBuffer
             ) {
                 if (ship.canDock(freePlanet)) {
                     return ship.dock(freePlanet);
@@ -50,8 +66,8 @@ function fourStrat(gameMap) {
                     });
                 }
             } else if (
-                ship.distanceBetween(dockPlanet) < ship.distanceBetween(freePlanet) - 15 &&
-                ship.distanceBetween(dockPlanet) < ship.distanceBetween(enemy) + 15
+                ship.distanceBetween(dockPlanet) < ship.distanceBetween(freePlanet) - freeBuffer &&
+                ship.distanceBetween(dockPlanet) < ship.distanceBetween(enemy) + enemyBuffer
             ) {
                 if (ship.canDock(dockPlanet)) {
                     return ship.dock(dockPlanet);
@@ -65,7 +81,7 @@ function fourStrat(gameMap) {
                     });
                 }
             } else {
-                if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + 5) {
+                if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + dockedEnemyBuffer) {
                     return ship.navigate({
                         target: docked,
                         keepDistanceToTarget: 5,
@@ -84,7 +100,7 @@ function fourStrat(gameMap) {
                 }
             }
         } else if(freePlanets.length > 0 && dockPlanets.length === 0) {
-            if (ship.distanceBetween(freePlanet) < ship.distanceBetween(enemy) + 15) {
+            if (ship.distanceBetween(freePlanet) < ship.distanceBetween(enemy) + enemyBuffer) {
                 if (ship.canDock(freePlanet)) {
                     return ship.dock(freePlanet);
                 } else {
@@ -97,7 +113,7 @@ function fourStrat(gameMap) {
                     });
                 }
             } else {
-                if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + 5) {
+                if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + enemyBuffer) {
                     return ship.navigate({
                         target: docked,
                         keepDistanceToTarget: 5,
@@ -116,7 +132,7 @@ function fourStrat(gameMap) {
                 }
             }
         }  else if(dockPlanets.length > 0 && freePlanets.length === 0) {
-            if (ship.distanceBetween(dockPlanets) < ship.distanceBetween(enemy) + 15) {
+            if (ship.distanceBetween(dockPlanets) < ship.distanceBetween(enemy) + enemyBuffer) {
                 if (ship.canDock(dockPlanets)) {
                     return ship.dock(dockPlanets);
                 } else {
@@ -129,7 +145,7 @@ function fourStrat(gameMap) {
                     });
                 }
             } else {
-                if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + 5) {
+                if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + dockedEnemyBuffer) {
                     return ship.navigate({
                         target: docked,
                         keepDistanceToTarget: 5,
@@ -148,7 +164,7 @@ function fourStrat(gameMap) {
                 }
             }
         } else {
-            if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + 5) {
+            if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + dockedEnemyBuffer) {
                 return ship.navigate({
                     target: docked,
                     keepDistanceToTarget: 5,
