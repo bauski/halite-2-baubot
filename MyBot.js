@@ -1,7 +1,7 @@
 const Game = require('./hlt/Game');
 const Log = require('./hlt/Log');
 
-const {strat} = require('./strategies/strategies');
+const {fourStrat, focusStrat} = require('./strategies/strategies');
 
 // start a game with a bot named 'baubot'
 // and a strategy defaultStrategy defined in strategies.js
@@ -11,5 +11,5 @@ Game.start({
     preProcessing: map => {
         Log.log('no data pre-processing performed. number of ships: ' + map.myShips.length)
     },
-    strategy: strat
+    strategy: fourStrat
 });

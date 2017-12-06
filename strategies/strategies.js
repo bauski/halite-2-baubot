@@ -6,8 +6,8 @@ const Geometry = require('../hlt/Geometry');
  * @param {GameMap} gameMap
  * @returns {string[]} moves that needs to be taken. null values are ignored
  */
-// baubot strat.
-function strat(gameMap) {
+// baubot 4 target strat.
+function fourStrat(gameMap) {
     // Here we build the set of commands to be sent to the Halite engine at the end of the turn
     // one ship - one command
     // in this particular strategy we only give new commands to ships that are not docked
@@ -68,7 +68,7 @@ function strat(gameMap) {
                 if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + 5) {
                     return ship.navigate({
                         target: docked,
-                        keepDistanceToTarget: 0,
+                        keepDistanceToTarget: 5,
                         speed: constants.MAX_SPEED,
                         avoidObstacles: true,
                         ignoreShips: false
@@ -76,7 +76,7 @@ function strat(gameMap) {
                 } else {
                     return ship.navigate({
                         target: enemy,
-                        keepDistanceToTarget: 0,
+                        keepDistanceToTarget: 5,
                         speed: constants.MAX_SPEED,
                         avoidObstacles: true,
                         ignoreShips: false
@@ -100,7 +100,7 @@ function strat(gameMap) {
                 if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + 5) {
                     return ship.navigate({
                         target: docked,
-                        keepDistanceToTarget: 0,
+                        keepDistanceToTarget: 5,
                         speed: constants.MAX_SPEED,
                         avoidObstacles: true,
                         ignoreShips: false
@@ -108,7 +108,7 @@ function strat(gameMap) {
                 } else {
                     return ship.navigate({
                         target: enemy,
-                        keepDistanceToTarget: 0,
+                        keepDistanceToTarget: 5,
                         speed: constants.MAX_SPEED,
                         avoidObstacles: true,
                         ignoreShips: false
@@ -132,7 +132,7 @@ function strat(gameMap) {
                 if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + 5) {
                     return ship.navigate({
                         target: docked,
-                        keepDistanceToTarget: 0,
+                        keepDistanceToTarget: 5,
                         speed: constants.MAX_SPEED,
                         avoidObstacles: true,
                         ignoreShips: false
@@ -140,7 +140,7 @@ function strat(gameMap) {
                 } else {
                     return ship.navigate({
                         target: enemy,
-                        keepDistanceToTarget: 0,
+                        keepDistanceToTarget: 5,
                         speed: constants.MAX_SPEED,
                         avoidObstacles: true,
                         ignoreShips: false
@@ -151,7 +151,7 @@ function strat(gameMap) {
             if (ship.distanceBetween(docked) < ship.distanceBetween(enemy) + 5) {
                 return ship.navigate({
                     target: docked,
-                    keepDistanceToTarget: 0,
+                    keepDistanceToTarget: 5,
                     speed: constants.MAX_SPEED,
                     avoidObstacles: true,
                     ignoreShips: false
@@ -159,7 +159,7 @@ function strat(gameMap) {
             } else {
                 return ship.navigate({
                     target: enemy,
-                    keepDistanceToTarget: 0,
+                    keepDistanceToTarget: 5,
                     speed: constants.MAX_SPEED,
                     avoidObstacles: true,
                     ignoreShips: false
@@ -169,4 +169,22 @@ function strat(gameMap) {
     });
     return moves;
 }
-module.exports = {strat};
+// baubot focus strat.
+function focusStrat(gameMap) {
+    var targetPlanet;
+
+    const moves = gameMap.myShips.filter(s => s.isUndocked()).map(
+    ship => {
+        // If targetPlanet is not set, find nearest planet and set to targetPlanet.
+            // Head for planet.
+        // Else
+            // If distance from ship to planet is less than 5.
+                // If planet dockable, dock.
+                // Else find all vulnerable enemies.
+                    // If there are vulnerable enemies, kill.
+                    // Else, find next
+            // Else
+    });
+    return moves;
+}
+module.exports = {fourStrat,focusStrat};
