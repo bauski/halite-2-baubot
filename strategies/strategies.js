@@ -8,8 +8,9 @@ function basic(gameMap) {
     var targetPlanet = false;
     var targetEnemy = false;
 
-    var planetBuffer = 15;
+    var planetBuffer = 25;
     var enemyBuffer = 5;
+    var targetBuffer = 15;
 
     // Ship Tactics.
     const moves = gameMap.myShips.filter(s => s.isUndocked()).map(
@@ -32,7 +33,7 @@ function basic(gameMap) {
         targetEnemy = getTarget(busyEnemy, activeEnemy, enemyBuffer, ship);
 
         if(targetPlanet && targetEnemy) {
-            if(ship.distanceBetween(targetPlanet) < ship.distanceBetween(targetEnemy)) {
+            if(ship.distanceBetween(targetPlanet) + targetBuffer < ship.distanceBetween(targetEnemy)) {
                 return tryDocking(ship,targetPlanet,move);
             } else {
                 return move(ship,targetEnemy);
@@ -82,7 +83,11 @@ function basic(gameMap) {
         var distance = 5;
         if(target.toString()[0] == "p") {
             distance = target.radius + 3;
+            if(ship.distanceBetween(target) < 20) {
+                speed = speed/1.5;
+            }
         }
+
         return ship.navigate({
             target: target,
             keepDistanceToTarget: distance,
