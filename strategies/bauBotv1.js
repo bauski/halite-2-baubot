@@ -1,8 +1,7 @@
 const constants = require('../hlt/Constants');
 const Geometry = require('../hlt/Geometry');
-const Log = require('../hlt/Log');
 
-// baubot basic strat.
+// baubot 4 target strat.
 function basic(gameMap) {
     var planets = gameMap.planets;
     var enemies = gameMap.enemyShips;
@@ -13,22 +12,20 @@ function basic(gameMap) {
     var enemyBuffer = 5;
     var targetBuffer = 15;
 
-    var myPlanets = planets.filter(p => p.isOwnedByMe());
-    var dockablePlanets = myPlanets.filter(p => p.hasDockingSpot());
-    var freePlanets = planets.filter(p => p.isFree());
-    var activeEnemies = enemies.filter(s => s.isUndocked());
-    var busyEnemies = enemies.filter(s => !s.isUndocked());
-    var activeAllies = gameMap.myShips.filter(s => s.isUndocked());
-
     // Ship Tactics.
     const moves = gameMap.myShips.filter(s => s.isUndocked()).map(
     ship => {
+        var dockablePlanets = planets.filter(p => p.isOwnedByMe() && p.hasDockingSpot());
         var dockablePlanet = getClosest(dockablePlanets,ship);
+
+        var freePlanets = planets.filter(p => p.isFree());
         var freePlanet = getClosest(freePlanets,ship);
+
+        var activeEnemies = enemies.filter(s => s.isUndocked());
         var activeEnemy = getClosest(activeEnemies,ship);
+
+        var busyEnemies = enemies.filter(s => !s.isUndocked());
         var busyEnemy = getClosest(busyEnemies,ship);
-        var myPlanet = getClosest(myPlanets,ship);
-        var activeAlly = getClosest(activeAllies,ship,1);
 
         // Set target planet if possible.
         targetPlanet = getTarget(freePlanet, dockablePlanet, planetBuffer, ship);
@@ -37,44 +34,27 @@ function basic(gameMap) {
 
         if(targetPlanet && targetEnemy) {
             if(ship.distanceBetween(targetPlanet) + targetBuffer < ship.distanceBetween(targetEnemy)) {
-                return tryDocking(ship,targetPlanet);
+                return tryDocking(ship,targetPlanet,move);
             } else {
-                return attack(ship, targetEnemy, activeAlly);
+                return move(ship,targetEnemy);
             }
         }  else if(targetPlanet && !targetEnemy) {
-            return tryDocking(ship,targetPlanet);
+            return tryDocking(ship,targetPlanet,move);
         } else if(!targetPlanet && targetEnemy) {
-            return attack(ship, targetEnemy, activeAlly);
+            return move(ship,targetEnemy);
         }
     });
     return moves;
 
-    function attack(ship, target, ally) {
-
-        if(ship.distanceBetween(target) <= 5) {
-            if(ally) {
-                if(ship.distanceBetween(target) < ship.distanceBetween(ally)) {
-                    return move(ship, ally);
-                } else {
-                    return move(ship, target);
-                }
-            } else {
-                return move(ship, target);
-            }
-        } else {
-            return move(ship, target);
-        }
-    }
-
-    function getClosest(multiple, ship, index = 0) {
+    function getClosest(multiple,ship) {
         if(multiple.length > 0) {
-            return multiple.sort((a, b) => Geometry.distance(ship, a) - Geometry.distance(ship, b))[index];
+            return multiple.sort((a, b) => Geometry.distance(ship, a) - Geometry.distance(ship, b))[0];
         } else {
             return false;
         }
     }
 
-    function tryDocking(ship,planet) {
+    function tryDocking(ship,planet,move) {
         if(ship.canDock(planet)) {
             return ship.dock(planet);
         } else {
@@ -98,14 +78,16 @@ function basic(gameMap) {
         return target;
     }
 
-    function move(ship, target, distance = 5) {
+    function move(ship,target) {
         var speed = constants.MAX_SPEED;
+        var distance = 5;
         if(target.toString()[0] == "p") {
             distance = target.radius + 3;
             if(ship.distanceBetween(target) < 20) {
                 speed = speed/1.5;
             }
         }
+
         return ship.navigate({
             target: target,
             keepDistanceToTarget: distance,
